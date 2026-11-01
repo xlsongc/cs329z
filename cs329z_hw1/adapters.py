@@ -40,6 +40,10 @@ from cs329z_hw1.types import (
     ToolSpec,
 )
 
+from cs329z_hw1.pipelines.priority import (
+    classify_priority
+)
+
 # ======================================================================
 # Part 1: LLM pipelines
 # ======================================================================
@@ -61,7 +65,7 @@ def run_priority(email: Email, lm: LMCallable) -> dict:
     * The function does not raise and does not modify ``email``.
     * Live: at least 85% agreement with tests/fixtures/priority_gold.json.
     """
-    raise NotImplementedError
+    return classify_priority(email, lm)
 
 
 def run_daily_digest(emails: list[Email], lm: LMCallable) -> str:
