@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import json
 import logging
@@ -10,6 +11,7 @@ from cs329z_hw1.types import Email, LMCallable
 
 from .priority import classify_priority
 
+MAX_WORKERS = 4
 log = logging.getLogger(__name__)
 
 URGENCY_RANK = {"urgent": 0, "normal": 1, "unknown": 1, "ignore": 2}
@@ -33,10 +35,11 @@ The following is the list of emails that you need to summarize into a digest:
 
 def classify_all(emails: list[Email], lm: LMCallable) -> list[tuple[Email, dict]]:
     """Classify all emails in the list and return a list of tuples of (email, classification)"""
-    results = []
-    for email in emails:
+    def classify_email(email: Email) -> tuple[Email, dict]:
         classification = classify_priority(email, lm)
-        results.append((email, classification))
+        return (email, classification)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        results = list(pool.map(classify_email, emails))
     return results
 
 def drop_ignore(pairs: list[tuple[Email, dict]]) -> list[tuple[Email, dict]]:
