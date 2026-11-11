@@ -40,11 +40,13 @@ from cs329z_hw1.types import (
     ToolSpec,
 )
 
+from cs329z_hw1.tokenizer import tokenize
 from cs329z_hw1.pipelines.priority import (
     classify_priority
 )
 
 from .pipelines.digest import daily_digest
+from .pipelines.bm25 import build_index, search
 
 # ======================================================================
 # Part 1: LLM pipelines
@@ -99,7 +101,7 @@ def run_bm25_build(docs: list[str]) -> Any:
     back to ``run_bm25_search``. The index over the archive must build in
     under 15 seconds.
     """
-    raise NotImplementedError
+    return build_index(docs)
 
 
 def run_bm25_search(index: Any, query: str, k: int) -> list[tuple[int, float]]:
@@ -120,7 +122,7 @@ def run_bm25_search(index: Any, query: str, k: int) -> list[tuple[int, float]]:
       query on average over the archive, and 2 ms for a term that occurs in
       3 of 200,000 documents.
     """
-    raise NotImplementedError
+    return search(index, query, k)
 
 
 def run_email_qa(
