@@ -7,7 +7,13 @@ import logging
 
 from cs329z_hw1.types import Email, LMCallable
 
+
+log = logging.getLogger(__name__)
+
 MAX_EMAIL_BODY_LENGTH = 3000
+MAX_EMAIL_NUMBER_PER_ROUND = 5
+MAX_TRYOUT_ROUND = 3
+
 SYSTEM_PROMPT = """You answer questions from a company email archive. Each turn you see the question, the searches made so far, and every email those searches returned. Searches use keyword matching (BM25), and you have at most 3 searches in total. A long email body is cut off and ends with "[truncated]".
 
 Reply with exactly one JSON object and nothing else. There are two kinds of reply.
@@ -122,7 +128,33 @@ def parse_reply(reply: str) -> dict | None:
         return None
 
 
-def answer_question(question: str, search, lm) -> dict:
+def answer_question(question: str, search, lm: LMCallable) -> dict:
+    seen = {} # previous queried emails list
+    queries = [] # previous queries
+
+    query = question
+    for hop in range(MAX_TRYOUT_ROUND):
+        retrieved_email = search(query, MAX_EMAIL_NUMBER_PER_ROUND)
+        queries.append(query)
+        for email in retrieved_email:
+            seen[email["id"]] = email
+        all_email = list(seen.values())
+        if hop == MAX_TRYOUT_ROUND - 1:
+            message = build_messages(question, all_email, queries, True)
+        else:
+            message = build_messages(question, all_email, queries, False)
+        try:
+            reply = lm(message)
+        except Exception as e:
+            log.warning("model call failed: %s", e)
+            reply = None
+        decision = parse_reply(reply)
+        if not decision:
+            return {"answer": None, "support": []}
+        elif decision.get("action") == "answer":
+            return {"answer": decision.get("answer"), "support": decision.get("support") or []}
+        else:
+            query = decision.get("query")
+    return {"answer": None, "support": []}
 
 
-    return 
