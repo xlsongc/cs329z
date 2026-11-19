@@ -152,7 +152,8 @@ def answer_question(question: str, search, lm: LMCallable) -> dict:
         if not decision:
             return {"answer": None, "support": []}
         elif decision.get("action") == "answer":
-            return {"answer": decision.get("answer"), "support": decision.get("support") or []}
+            actual_support = [i for i in decision["support"] if i in seen]
+            return {"answer": decision.get("answer"), "support": actual_support or []}
         else:
             query = decision.get("query")
     return {"answer": None, "support": []}

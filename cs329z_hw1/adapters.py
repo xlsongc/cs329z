@@ -47,7 +47,7 @@ from cs329z_hw1.pipelines.priority import (
 
 from .pipelines.digest import daily_digest
 from .pipelines.bm25 import build_index, search
-
+from .pipelines.email_qa import answer_question
 # ======================================================================
 # Part 1: LLM pipelines
 # ======================================================================
@@ -148,7 +148,7 @@ def run_email_qa(
       contain an accepted answer, and the ``support`` of every correct
       answer includes at least one gold email.
     """
-    raise NotImplementedError
+    return answer_question(question, search, lm)
 
 
 # ======================================================================
